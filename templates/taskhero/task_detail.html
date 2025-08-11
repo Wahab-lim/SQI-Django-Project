@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - TaskHero{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="card-title mb-2">{{ task.title }}</h3>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge bg-{{ task.priority_color }} fs-6">
+                                <i class="fas fa-circle me-1"></i>{{ task.get_priority_display }} Priority
+                            </span>
+                            <span class="badge bg-{{ task.status|yesno:'success,warning,secondary' }} fs-6">
+                                <i class="fas fa-{% if task.status == 'completed' %}check-circle{% elif task.status == 'in_progress' %}clock{% else %}clipboard-list{% endif %} me-1"></i>
+                                {{ task.get_status_display }}
+                            </span>
+                            {% if task.is_overdue %}
+                                <span class="badge bg-danger fs-6">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Overdue
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'taskhero:task_edit' task.id %}">
+                                <i class="fas fa-edit me-2"></i>Edit Task
+                            </a></li>
+                            {% if task.status != 'completed' %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'taskhero:task_complete' task.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-success">
+                                            <i class="fas fa-check-circle me-2"></i>Mark as Completed
+                                        </button>
+                                    </form>
+                                </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" 
+                                   onclick="confirmDelete('{% url 'taskhero:task_delete' task.id %}', '{{ task.title }}')">
+                                <i class="fas fa-trash me-2"></i>Delete Task
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if task.description %}
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-2">Description</h5>
+                        <div class="bg-light p-3 rounded">
+                            {{ task.description|linebreaks }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar-alt text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Due Date</small>
+                                <span class="{% if task.is_overdue %}text-danger fw-bold{% endif %}">
+                                    {{ task.due_date|date:"F d, Y g:i A" }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Created</small>
+                                <span>{{ task.created_at|date:"F d, Y g:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if task.updated_at != task.created_at %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-edit text-muted me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Last Updated</small>
+                                    <span>{{ task.updated_at|date:"F d, Y g:i A" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Owner</small>
+                                <span>{{ task.owner.get_full_name|default:task.owner.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'taskhero:task_edit' task.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Task
+                    </a>
+                    
+                    {% if task.status != 'completed' %}
+                        <form method="post" action="{% url 'taskhero:task_complete' task.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check-circle me-2"></i>Mark as Completed
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    <a href="{% url 'taskhero:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    
+                    <hr>
+                    
+                    <button type="button" class="btn btn-outline-danger" 
+                            onclick="confirmDelete('{% url 'taskhero:task_delete' task.id %}', '{{ task.title }}')">
+                        <i class="fas fa-trash me-2"></i>Delete Task
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Task Statistics -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-white">
+                <h6 class="card-title mb-0">Task Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="p-2">
+                            <i class="fas fa-exclamation-circle fa-2x text-{{ task.priority_color }} mb-2"></i>
+                            <div class="small text-muted">Priority</div>
+                            <div class="fw-bold">{{ task.get_priority_display }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2">
+                            <i class="fas fa-{% if task.status == 'completed' %}check-circle text-success{% elif task.status == 'in_progress' %}clock text-warning{% else %}clipboard-list text-secondary{% endif %} fa-2x mb-2"></i>
+                            <div class="small text-muted">Status</div>
+                            <div class="fw-bold">{{ task.get_status_display }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

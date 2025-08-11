@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TaskHero{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-1">
+            <i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard
+        </h1>
+        <p class="text-muted mb-0">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+    </div>
+    <a href="{% url 'taskhero:task_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>New Task
+    </a>
+</div>
+
+<!-- Kanban Board -->
+<div class="row g-4">
+    <!-- To Do Column -->
+    <div class="col-lg-4">
+        <div class="kanban-column">
+            <div class="kanban-header bg-secondary text-white p-3 rounded-top">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>To Do
+                    <span class="badge bg-light text-dark ms-2">{{ todo_tasks.count }}</span>
+                </h5>
+            </div>
+            <div class="kanban-body bg-light p-3 rounded-bottom" style="min-height: 400px;">
+                {% for task in todo_tasks %}
+                    {% include 'taskhero/task_card.html' with task=task %}
+                {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clipboard fa-2x mb-3 opacity-50"></i>
+                        <p class="mb-0">No tasks to do</p>
+                        <small>Create a new task to get started!</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="col-lg-4">
+        <div class="kanban-column">
+            <div class="kanban-header bg-warning text-white p-3 rounded-top">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>In Progress
+                    <span class="badge bg-light text-dark ms-2">{{ in_progress_tasks.count }}</span>
+                </h5>
+            </div>
+            <div class="kanban-body bg-light p-3 rounded-bottom" style="min-height: 400px;">
+                {% for task in in_progress_tasks %}
+                    {% include 'taskhero/task_card.html' with task=task %}
+                {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clock fa-2x mb-3 opacity-50"></i>
+                        <p class="mb-0">No tasks in progress</p>
+                        <small>Move tasks here when you start working on them!</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Column -->
+    <div class="col-lg-4">
+        <div class="kanban-column">
+            <div class="kanban-header bg-success text-white p-3 rounded-top">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>Completed
+                    <span class="badge bg-light text-dark ms-2">{{ completed_tasks.count }}</span>
+                </h5>
+            </div>
+            <div class="kanban-body bg-light p-3 rounded-bottom" style="min-height: 400px;">
+                {% for task in completed_tasks %}
+                    {% include 'taskhero/task_card.html' with task=task %}
+                {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-2x mb-3 opacity-50"></i>
+                        <p class="mb-0">No completed tasks</p>
+                        <small>Completed tasks will appear here!</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Task Card Template -->
+{% comment %}
+This template is included for each task card in the kanban columns
+{% endcomment %}
